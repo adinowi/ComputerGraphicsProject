@@ -198,6 +198,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="io\controls.hpp" />
+    <ClInclude Include="model\car.hpp" />
+    <ClInclude Include="renderer\car_renderer.hpp" />
     <ClInclude Include="renderer\mesh.h" />
     <ClInclude Include="renderer\model.h" />
     <ClInclude Include="shader\shader.hpp" />
@@ -207,6 +209,8 @@
   <ItemGroup>
     <ClCompile Include="io\controls.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="model\car.cpp" />
+    <ClCompile Include="renderer\car_renderer.cpp" />
     <ClCompile Include="renderer\mesh.cpp" />
     <ClCompile Include="renderer\model.cpp" />
     <ClCompile Include="shader\shader.cpp" />

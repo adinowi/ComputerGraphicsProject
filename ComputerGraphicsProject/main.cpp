@@ -23,7 +23,7 @@ using namespace glm;
 
 #include "renderer\model.h"
 #include "utils\utils.h"
-#include <filesystem>
+#include "renderer\car_renderer.hpp"
 
 
 static int SPRING_POINTS_SIZE;
@@ -107,14 +107,21 @@ int main(void)
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	GLuint modelMatrixID = glGetUniformLocation(programID, "model");
+	GLuint viewMatrixID = glGetUniformLocation(programID, "view");
+	GLuint projectionlMatrixID = glGetUniformLocation(programID, "projection");
 
 	glm::mat4 Projection;
 	glm::mat4 View;
 	glm::mat4 modelMatrix;
 	glm::mat4 MVP;
 
+	//renderer::RectangleRenderer rectangle = renderer::RectangleRenderer("resources/duck.png", 0, 0, 0, 5, 5);
 	//Model ourModel = Model("test\\nanosuit.obj");
-	renderer::Model car = renderer::Model("resources/car.obj");
+	renderer::Model parking = renderer::Model("resources/parking.obj");
+	//renderer::Model car = renderer::Model("resources/car.obj");
+	renderer::CarRenderer carRenderer = renderer::CarRenderer();
+	
 
 	initMVP(Projection, View, modelMatrix);
 	glClearDepth(1.0f);
@@ -155,7 +162,9 @@ int main(void)
 		View = io::GetViewMatrix();
 		Projection = io::GetProjectionMatrix();
 		//ourModel.Draw(programID);
-		car.Draw(programID);
+		parking.Draw(programID);
+		//car.Draw(programID);
+		carRenderer.Draw(programID, modelMatrixID);
 
 		glUniform1i(TextureID, 1);
 		//defineTriangle(vertexbuffer, colorbuffer);
@@ -164,7 +173,10 @@ int main(void)
 		// Compute MVP matrix
 		MVP = Projection * View * modelMatrix;
 		// Send our transformation to the currently bound shader, in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
+		glUniformMatrix4fv(viewMatrixID, 1, GL_FALSE, &View[0][0]);
+		glUniformMatrix4fv(projectionlMatrixID, 1, GL_FALSE, &Projection[0][0]);
 		// Draw the triangle !
 		//glDrawArrays(GL_TRIANGLE_STRIP, 0, SPRING_POINTS_SIZE); // Starting from vertex 0; 3 vertices total -> 1 triangle
 		//s.evaluatePoints(time);

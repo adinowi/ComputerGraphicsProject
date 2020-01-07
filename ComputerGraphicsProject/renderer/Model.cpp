@@ -19,6 +19,10 @@
 using namespace std;
 using namespace renderer;
 
+Model::Model() {
+	meshes = std::vector<renderer::Mesh>();
+}
+
 Model::Model(string const& path, bool gamma) : gammaCorrection(gamma)
 {
 	Model::loadModel(path);

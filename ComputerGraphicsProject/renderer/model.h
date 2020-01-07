@@ -22,9 +22,11 @@ namespace renderer {
 		std::string directory;
 		bool gammaCorrection;
 
+
+		Model();
 		/*  Functions   */
 		// constructor, expects a filepath to a 3D model.
-		renderer::Model(std::string const& path, bool gamma = false);
+		Model(std::string const& path, bool gamma = false);
 
 		// draws the model, and thus all its meshes
 		void Draw(GLuint shaderId);
