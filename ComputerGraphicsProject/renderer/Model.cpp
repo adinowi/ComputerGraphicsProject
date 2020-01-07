@@ -13,9 +13,10 @@
 #include <map>
 #include <vector>
 #include <soil.h>
-#include "Mesh.cpp"
+#include "Mesh.h"
 #include "..\utils\Utils.h"
 using namespace std;
+using namespace renderer;
 
 /*
 unsigned int TextureFromFile(const char* path, const string& directory)
@@ -226,7 +227,7 @@ private:
 				string filename = string(str.C_Str());
 				filename = this->directory + '/' + filename;
 				Texture texture;
-				texture.id = Utils::loadTGA_glfw(filename.c_str());
+				texture.id = utils::loadTGA_glfw(filename.c_str());
 				texture.type = typeName;
 				texture.path = str.C_Str();
 				textures.push_back(texture);

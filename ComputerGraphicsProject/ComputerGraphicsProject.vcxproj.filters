@@ -21,13 +21,16 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="shader\shader.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="utils\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="io\controls.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader\shader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,10 +47,10 @@
     <ClCompile Include="io\controls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model\Mesh.cpp">
+    <ClCompile Include="renderer\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model\Model.cpp">
+    <ClCompile Include="renderer\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

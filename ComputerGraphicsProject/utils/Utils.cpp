@@ -8,7 +8,7 @@
 #include <GLFW\glfw3.h>
 #include <soil.h>
 
-namespace Utils {
+namespace utils {
 		void draw(std::vector<float> interleavedVertices, std::vector<int> indices) {
 			GLuint vboId;
 			glGenBuffers(1, &vboId);

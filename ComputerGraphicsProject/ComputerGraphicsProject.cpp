@@ -21,7 +21,7 @@ using namespace glm;
 
 #include "io\controls.hpp"
 
-#include "model\Model.cpp"
+#include "renderer\Model.cpp"
 #include "utils\Utils.h"
 #include <filesystem>
 
@@ -103,7 +103,7 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 	
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("shader/SimpleVertexShader.vertexshader", "shader/SimpleFragmentShader.fragmentshader");
+	GLuint programID = shader::LoadShaders("shader/SimpleVertexShader.vertexshader", "shader/SimpleFragmentShader.fragmentshader");
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -151,9 +151,9 @@ int main(void)
 
 		// Model matrix : an identity matrix (model will be at the origin)
 		modelMatrix = glm::mat4(1.0f);
-		computeMatricesFromInputs();
-		View = getViewMatrix();
-		Projection = getProjectionMatrix();
+		io::ComputeMatricesFromInputs();
+		View = io::GetViewMatrix();
+		Projection = io::GetProjectionMatrix();
 		//ourModel.Draw(programID);
 		car.Draw(programID);
 

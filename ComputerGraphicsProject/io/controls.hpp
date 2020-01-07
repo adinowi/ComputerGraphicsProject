@@ -1,8 +1,10 @@
 #ifndef CONTROLS_HPP
 #define CONTROLS_HPP
+#include <glm/glm.hpp>
 
-void computeMatricesFromInputs();
-glm::mat4 getViewMatrix();
-glm::mat4 getProjectionMatrix();
-
+namespace io {
+	void ComputeMatricesFromInputs();
+	glm::mat4 GetViewMatrix();
+	glm::mat4 GetProjectionMatrix();
+}
 #endif

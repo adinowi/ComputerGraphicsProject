@@ -354,3 +354,4 @@ MigrationBackup/
 
 # Customs for project
 !ComputerGraphicsProject/models/*.obj
+include/glm/out/

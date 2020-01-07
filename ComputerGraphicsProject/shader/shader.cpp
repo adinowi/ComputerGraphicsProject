@@ -4,16 +4,14 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-using namespace std;
-
 #include <stdlib.h>
 #include <string.h>
-
 #include <GL\glew.h>
-
 #include "shader.hpp"
 
-GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path){
+using namespace std;
+
+GLuint shader::LoadShaders(const char * vertex_file_path,const char * fragment_file_path){
 
 	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -98,3 +96,4 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 
 	return ProgramID;
 }
+

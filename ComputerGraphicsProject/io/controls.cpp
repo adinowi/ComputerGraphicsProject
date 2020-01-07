@@ -12,10 +12,10 @@ using namespace glm;
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 
-glm::mat4 getViewMatrix() {
+glm::mat4 io::GetViewMatrix() {
 	return ViewMatrix;
 }
-glm::mat4 getProjectionMatrix() {
+glm::mat4 io::GetProjectionMatrix() {
 	return ProjectionMatrix;
 }
 
@@ -34,7 +34,7 @@ float mouseSpeed = 0.005f;
 
 
 
-void computeMatricesFromInputs() {
+void io::ComputeMatricesFromInputs() {
 
 	// glfwGetTime is called only once, the first time this function is called
 	static double lastTime = glfwGetTime();
