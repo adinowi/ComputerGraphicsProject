@@ -198,18 +198,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="io\controls.hpp" />
-    <ClInclude Include="renderer\Mesh.h" />
+    <ClInclude Include="renderer\mesh.h" />
+    <ClInclude Include="renderer\model.h" />
     <ClInclude Include="shader\shader.hpp" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="utils\Utils.h" />
+    <ClInclude Include="utils\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="io\controls.cpp" />
-    <ClCompile Include="ComputerGraphicsProject.cpp" />
-    <ClCompile Include="renderer\Model.cpp" />
-    <ClCompile Include="renderer\Mesh.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="renderer\mesh.cpp" />
+    <ClCompile Include="renderer\model.cpp" />
     <ClCompile Include="shader\shader.cpp" />
-    <ClCompile Include="utils\Utils.cpp" />
+    <ClCompile Include="utils\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

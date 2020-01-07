@@ -21,8 +21,8 @@ using namespace glm;
 
 #include "io\controls.hpp"
 
-#include "renderer\Model.cpp"
-#include "utils\Utils.h"
+#include "renderer\model.h"
+#include "utils\utils.h"
 #include <filesystem>
 
 
@@ -114,7 +114,7 @@ int main(void)
 	glm::mat4 MVP;
 
 	//Model ourModel = Model("test\\nanosuit.obj");
-	Model car = Model("resources/car.obj");
+	renderer::Model car = renderer::Model("resources/car.obj");
 
 	initMVP(Projection, View, modelMatrix);
 	glClearDepth(1.0f);

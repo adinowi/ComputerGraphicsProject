@@ -8,7 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-#include "Mesh.h"
+#include "mesh.h"
 
 using namespace renderer;
 
