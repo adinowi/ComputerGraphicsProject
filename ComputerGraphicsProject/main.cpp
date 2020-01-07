@@ -104,12 +104,19 @@ int main(void)
 	
 	// Create and compile our GLSL program from the shaders
 	GLuint programID = shader::LoadShaders("shader/SimpleVertexShader.vertexshader", "shader/SimpleFragmentShader.fragmentshader");
+	glm::vec3 lightPos(4.0f, 10.0f, 1.0f);
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	GLuint modelMatrixID = glGetUniformLocation(programID, "model");
 	GLuint viewMatrixID = glGetUniformLocation(programID, "view");
-	GLuint projectionlMatrixID = glGetUniformLocation(programID, "projection");
+	GLuint projectionMatrixID = glGetUniformLocation(programID, "projection");
+	GLuint directionID = glGetUniformLocation(programID, "light.direction");
+	GLuint viewPosID = glGetUniformLocation(programID, "viewPos");
+	GLuint lightAmbientID = glGetUniformLocation(programID, "light.ambient");
+	GLuint lightDiffuseID = glGetUniformLocation(programID, "light.diffuse");
+	GLuint lightSpecularID = glGetUniformLocation(programID, "light.specular");
+	GLuint shininessID = glGetUniformLocation(programID, "shininess");
 
 	glm::mat4 Projection;
 	glm::mat4 View;
@@ -174,9 +181,17 @@ int main(void)
 		MVP = Projection * View * modelMatrix;
 		// Send our transformation to the currently bound shader, in the "MVP" uniform
 		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glm::vec3 viewPos = io::GetPosition();
+		glUniform3f(directionID, -0.2f, -1.0f, -0.3f);
+		glUniform3fv(viewPosID, 1, &viewPos[0]);
+		glUniform3f(lightAmbientID, 0.5f, 0.5f, 0.5f);
+		glUniform3f(lightDiffuseID, 0.5f, 0.5f, 0.5f);
+		glUniform3f(lightSpecularID, 1.0f, 1.0f, 1.0f);
+		glUniform1f(shininessID, 4.0f);
+
 		glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 		glUniformMatrix4fv(viewMatrixID, 1, GL_FALSE, &View[0][0]);
-		glUniformMatrix4fv(projectionlMatrixID, 1, GL_FALSE, &Projection[0][0]);
+		glUniformMatrix4fv(projectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
 		// Draw the triangle !
 		//glDrawArrays(GL_TRIANGLE_STRIP, 0, SPRING_POINTS_SIZE); // Starting from vertex 0; 3 vertices total -> 1 triangle
 		//s.evaluatePoints(time);
