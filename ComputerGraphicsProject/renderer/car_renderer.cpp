@@ -9,7 +9,7 @@
 using namespace renderer;
 
 CarRenderer::CarRenderer() {
-	mCar = model::Car(glm::vec3(0,1.4f,0));
+	mCar = model::Car(glm::vec3(0,0.6f,0));
 	mCarModel = renderer::Model(CAR_MODEL_PATH);
 }
 

@@ -218,6 +218,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="shader\ShadowMappingDepth.fragmentshader" />
+    <None Include="shader\ShadowMappingDepth.vertexshader" />
     <None Include="shader\SimpleFragmentShader.fragmentshader" />
     <None Include="shader\SimpleVertexShader.vertexshader" />
   </ItemGroup>

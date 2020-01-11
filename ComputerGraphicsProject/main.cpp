@@ -104,24 +104,51 @@ int main(void)
 	
 	// Create and compile our GLSL program from the shaders
 	GLuint programID = shader::LoadShaders("shader/SimpleVertexShader.vertexshader", "shader/SimpleFragmentShader.fragmentshader");
-	glm::vec3 lightPos(4.0f, 10.0f, 1.0f);
+	GLuint shadowID = shader::LoadShaders("shader/ShadowMappingDepth.vertexshader", "shader/ShadowMappingDepth.fragmentshader");
+	glm::vec3 lightPos(-5.0f, 3.0f, -5.0f);
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	GLuint modelMatrixID = glGetUniformLocation(programID, "model");
 	GLuint viewMatrixID = glGetUniformLocation(programID, "view");
 	GLuint projectionMatrixID = glGetUniformLocation(programID, "projection");
-	GLuint directionID = glGetUniformLocation(programID, "light.direction");
+	GLuint directionID = glGetUniformLocation(programID, "light.position");
 	GLuint viewPosID = glGetUniformLocation(programID, "viewPos");
 	GLuint lightAmbientID = glGetUniformLocation(programID, "light.ambient");
 	GLuint lightDiffuseID = glGetUniformLocation(programID, "light.diffuse");
 	GLuint lightSpecularID = glGetUniformLocation(programID, "light.specular");
 	GLuint shininessID = glGetUniformLocation(programID, "shininess");
+	GLuint lightSpaceMatrixShadowID = glGetUniformLocation(shadowID, "lightSpaceMatrix");
+	GLuint modelShadowID = glGetUniformLocation(shadowID, "model");
+	GLuint lightSpaceMatrixProgramID = glGetUniformLocation(programID, "lightSpaceMatrix");
+	GLuint shadowMapID = glGetUniformLocation(programID, "shadowMap");
 
 	glm::mat4 Projection;
 	glm::mat4 View;
 	glm::mat4 modelMatrix;
 	glm::mat4 MVP;
+
+
+
+
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+	// create depth texture
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// attach depth texture as FBO's depth buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//renderer::RectangleRenderer rectangle = renderer::RectangleRenderer("resources/duck.png", 0, 0, 0, 5, 5);
 	//Model ourModel = Model("test\\nanosuit.obj");
@@ -135,45 +162,67 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-	GLuint vertexbuffer;
-	GLuint colorbuffer;
-	//defineSpring(vertexbuffer, colorbuffer);
-	glPointSize(1.0f);
-
-	
-	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
-	/*GLuint texAttrib = Utils::loadTGA_glfw("wood.png");
-	GLuint steelAttrib = Utils::loadTGA_glfw("steel2.png");
-	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texAttrib);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, steelAttrib);*/
+	modelMatrix = glm::mat4(1.0f);
+	io::ComputeMatricesFromInputs();
+	View = io::GetViewMatrix();
+	Projection = io::GetProjectionMatrix();
 
 
-	
-	//glEnableVertexAttribArray(texAttrib);
-	//glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-	float time = 0.0f;
+	glUniformMatrix4fv(modelShadowID, 1, GL_FALSE, &modelMatrix[0][0]);
+
 	do {
+		modelMatrix = glm::mat4(1.0f);
+		io::ComputeMatricesFromInputs();
+		View = io::GetViewMatrix();
+		Projection = io::GetProjectionMatrix();
+
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 1. render depth of scene to texture (from light's perspective)
+		// --------------------------------------------------------------
+		glm::mat4 lightProjection, lightView;
+		glm::mat4 lightSpaceMatrix;
+		float near_plane = 1.0f, far_plane = 20.0f;
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+		lightSpaceMatrix = lightProjection * lightView;
+		// render scene from light's point of view
+		glUseProgram(shadowID);
+		glUniformMatrix4fv(lightSpaceMatrixShadowID, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+		glUniformMatrix4fv(modelShadowID, 1, GL_FALSE, &modelMatrix[0][0]);
+		//simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		
+		//parking.Draw(shadowID);
+		//car.Draw(programID);
+		carRenderer.Draw(shadowID, modelShadowID);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// reset viewport
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+
+
+
+
+
+
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
 		glUseProgram(programID);
+		glUniformMatrix4fv(lightSpaceMatrixProgramID, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
 		// Model matrix : an identity matrix (model will be at the origin)
-		modelMatrix = glm::mat4(1.0f);
-		io::ComputeMatricesFromInputs();
-		View = io::GetViewMatrix();
-		Projection = io::GetProjectionMatrix();
+		
 		//ourModel.Draw(programID);
-		parking.Draw(programID);
-		//car.Draw(programID);
-		carRenderer.Draw(programID, modelMatrixID);
-
-		glUniform1i(TextureID, 1);
+		
 		//defineTriangle(vertexbuffer, colorbuffer);
 
 		// Draw 1st triangle
@@ -182,7 +231,7 @@ int main(void)
 		// Send our transformation to the currently bound shader, in the "MVP" uniform
 		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glm::vec3 viewPos = io::GetPosition();
-		glUniform3f(directionID, -0.2f, -1.0f, -0.3f);
+		glUniform3fv(directionID, 1, &lightPos[0]);
 		glUniform3fv(viewPosID, 1, &viewPos[0]);
 		glUniform3f(lightAmbientID, 0.5f, 0.5f, 0.5f);
 		glUniform3f(lightDiffuseID, 0.5f, 0.5f, 0.5f);
@@ -192,21 +241,26 @@ int main(void)
 		glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 		glUniformMatrix4fv(viewMatrixID, 1, GL_FALSE, &View[0][0]);
 		glUniformMatrix4fv(projectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
+
+		glActiveTexture(GL_TEXTURE10);
+		glPrioritizeTextures(10, NULL, 0);
+		glUniform1i(shadowMapID, 10);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
 		// Draw the triangle !
 		//glDrawArrays(GL_TRIANGLE_STRIP, 0, SPRING_POINTS_SIZE); // Starting from vertex 0; 3 vertices total -> 1 triangle
 		//s.evaluatePoints(time);
 		//s.draw(Projection, View, modelMatrix, MatrixID);
+		parking.Draw(programID);
+		//car.Draw(programID);
+		carRenderer.Draw(programID, modelMatrixID);
 
-		glUniform1i(TextureID, 0);
 
 	
 		MVP = Projection * View * modelMatrix;
 		// Send our transformation to the currently bound shader, in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-		
-
-		time += 0.01f;
+	
 
 		// Draw 2nd triangl
 		// Change model position
@@ -232,8 +286,6 @@ int main(void)
 	glDisableVertexAttribArray(1);
 
 	// Cleanup VBO
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &colorbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
 	glDeleteProgram(programID);
 

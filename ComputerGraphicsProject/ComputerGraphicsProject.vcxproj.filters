@@ -73,5 +73,7 @@
     <None Include="packages.config" />
     <None Include="shader\SimpleFragmentShader.fragmentshader" />
     <None Include="shader\SimpleVertexShader.vertexshader" />
+    <None Include="shader\ShadowMappingDepth.fragmentshader" />
+    <None Include="shader\ShadowMappingDepth.vertexshader" />
   </ItemGroup>
 </Project>
