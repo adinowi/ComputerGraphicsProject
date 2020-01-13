@@ -27,8 +27,8 @@ using namespace glm;
 
 
 static int SPRING_POINTS_SIZE;
-static const int SCREEN_WIDTH = 1024;
-static const int SCREEN_HEIGHT = 768;
+static const int SCREEN_WIDTH = 1280;
+static const int SCREEN_HEIGHT = 720;
 
 
 int init() {
@@ -105,19 +105,15 @@ int main(void)
 	// Create and compile our GLSL program from the shaders
 	GLuint programID = shader::LoadShaders("shader/SimpleVertexShader.vertexshader", "shader/SimpleFragmentShader.fragmentshader");
 	GLuint shadowID = shader::LoadShaders("shader/ShadowMappingDepth.vertexshader", "shader/ShadowMappingDepth.fragmentshader");
-	glm::vec3 lightPos(-5.0f, 3.0f, -5.0f);
+	glm::vec3 lightPos = io::GetLightPosition();
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	GLuint modelMatrixID = glGetUniformLocation(programID, "model");
 	GLuint viewMatrixID = glGetUniformLocation(programID, "view");
 	GLuint projectionMatrixID = glGetUniformLocation(programID, "projection");
-	GLuint directionID = glGetUniformLocation(programID, "light.position");
+	GLuint directionID = glGetUniformLocation(programID, "lightPosition");
 	GLuint viewPosID = glGetUniformLocation(programID, "viewPos");
-	GLuint lightAmbientID = glGetUniformLocation(programID, "light.ambient");
-	GLuint lightDiffuseID = glGetUniformLocation(programID, "light.diffuse");
-	GLuint lightSpecularID = glGetUniformLocation(programID, "light.specular");
-	GLuint shininessID = glGetUniformLocation(programID, "shininess");
 	GLuint lightSpaceMatrixShadowID = glGetUniformLocation(shadowID, "lightSpaceMatrix");
 	GLuint modelShadowID = glGetUniformLocation(shadowID, "model");
 	GLuint lightSpaceMatrixProgramID = glGetUniformLocation(programID, "lightSpaceMatrix");
@@ -126,7 +122,6 @@ int main(void)
 	glm::mat4 Projection;
 	glm::mat4 View;
 	glm::mat4 modelMatrix;
-	glm::mat4 MVP;
 
 
 
@@ -153,8 +148,10 @@ int main(void)
 	//renderer::RectangleRenderer rectangle = renderer::RectangleRenderer("resources/duck.png", 0, 0, 0, 5, 5);
 	//Model ourModel = Model("test\\nanosuit.obj");
 	renderer::Model parking = renderer::Model("resources/parking.obj");
+	renderer::Model cube = renderer::Model("resources/cube.obj");
 	//renderer::Model car = renderer::Model("resources/car.obj");
-	renderer::CarRenderer carRenderer = renderer::CarRenderer();
+	renderer::CarRenderer carRenderer = renderer::CarRenderer("resources/car_new.obj");
+	renderer::CarRenderer carRenderer2 = renderer::CarRenderer("resources/car_new.obj");
 	
 
 	initMVP(Projection, View, modelMatrix);
@@ -168,22 +165,31 @@ int main(void)
 	Projection = io::GetProjectionMatrix();
 
 
-	glUniformMatrix4fv(modelShadowID, 1, GL_FALSE, &modelMatrix[0][0]);
-
+	//glUniformMatrix4fv(modelShadowID, 1, GL_FALSE, &modelMatrix[0][0]);
+	float x = 0.0f;
 	do {
-		modelMatrix = glm::mat4(1.0f);
+		carRenderer2.mCar.move(-3.0f, 0.0f, -1.0f);
+		carRenderer.mCar.move(2.0f, 0.0f, 1.0f);
+		//carRenderer2.mCar.rotate(3.14/4);
+		//x += 0.0001f;
+		//carRenderer.mCar.move(-3.0f, 0.0f, -3.0f);
+		//modelMatrix = glm::mat4(1.0f);
+		//modelMatrix = glm::translate(modelMatrix, carRenderer.mCar.mPosition);
 		io::ComputeMatricesFromInputs();
 		View = io::GetViewMatrix();
 		Projection = io::GetProjectionMatrix();
 
+		
+
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		lightPos = io::GetLightPosition();
 
 		// 1. render depth of scene to texture (from light's perspective)
 		// --------------------------------------------------------------
 		glm::mat4 lightProjection, lightView;
 		glm::mat4 lightSpaceMatrix;
-		float near_plane = 1.0f, far_plane = 20.0f;
+		float near_plane = -10.0f, far_plane = 20.0f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 		lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
 		lightSpaceMatrix = lightProjection * lightView;
@@ -199,7 +205,18 @@ int main(void)
 		
 		//parking.Draw(shadowID);
 		//car.Draw(programID);
-		carRenderer.Draw(shadowID, modelShadowID);
+		//glCullFace(GL_FRONT);
+		modelMatrix = glm::translate(modelMatrix, carRenderer2.mCar.mPosition * 2.0f);
+		//modelMatrix = glm::rotate(modelMatrix, carRenderer2.mCar.mRotation * 2.0f, glm::vec3(0, 1.0f, 0));
+		
+		
+		carRenderer2.Draw(shadowID, modelShadowID, modelMatrix);
+		modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, carRenderer.mCar.mPosition * 2.0f);
+		//glUniformMatrix4fv(modelShadowID, 1, GL_FALSE, &modelMatrix[0][0]);
+		carRenderer.Draw(shadowID, modelShadowID, modelMatrix);
+		//glCullFace(GL_BACK);
+		//carRenderer2.Draw(shadowID, modelShadowID);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -219,61 +236,43 @@ int main(void)
 		glUseProgram(programID);
 		glUniformMatrix4fv(lightSpaceMatrixProgramID, 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 
-		// Model matrix : an identity matrix (model will be at the origin)
-		
-		//ourModel.Draw(programID);
-		
-		//defineTriangle(vertexbuffer, colorbuffer);
 
-		// Draw 1st triangle
-		// Compute MVP matrix
-		MVP = Projection * View * modelMatrix;
-		// Send our transformation to the currently bound shader, in the "MVP" uniform
-		//glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glm::vec3 viewPos = io::GetPosition();
 		glUniform3fv(directionID, 1, &lightPos[0]);
 		glUniform3fv(viewPosID, 1, &viewPos[0]);
-		glUniform3f(lightAmbientID, 0.5f, 0.5f, 0.5f);
-		glUniform3f(lightDiffuseID, 0.5f, 0.5f, 0.5f);
-		glUniform3f(lightSpecularID, 1.0f, 1.0f, 1.0f);
-		glUniform1f(shininessID, 4.0f);
-
+		modelMatrix = glm::mat4(1.0f);
 		glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &modelMatrix[0][0]);
 		glUniformMatrix4fv(viewMatrixID, 1, GL_FALSE, &View[0][0]);
 		glUniformMatrix4fv(projectionMatrixID, 1, GL_FALSE, &Projection[0][0]);
 
+		
+
+		parking.Draw(programID);
+
+		glm::mat4 aa= glm::mat4(1.0f);
+		
+		
+		aa = glm::translate(aa, carRenderer2.mCar.mPosition);
+		//aa = glm::rotate(aa, carRenderer2.mCar.mRotation, glm::vec3(0, 1.0f, 0));
+
 		glActiveTexture(GL_TEXTURE10);
-		glPrioritizeTextures(10, NULL, 0);
 		glUniform1i(shadowMapID, 10);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
-		// Draw the triangle !
-		//glDrawArrays(GL_TRIANGLE_STRIP, 0, SPRING_POINTS_SIZE); // Starting from vertex 0; 3 vertices total -> 1 triangle
-		//s.evaluatePoints(time);
-		//s.draw(Projection, View, modelMatrix, MatrixID);
-		parking.Draw(programID);
-		//car.Draw(programID);
-		carRenderer.Draw(programID, modelMatrixID);
+		//carRenderer.Draw(programID, modelMatrixID);
+		carRenderer2.Draw(programID, modelMatrixID, aa);
+
+		aa = glm::mat4(1.0f);
+		aa = glm::translate(aa, carRenderer.mCar.mPosition);
+		carRenderer.Draw(programID, modelMatrixID, aa);
+
+		glm::mat4 xx = glm::mat4(1.0f);
+		xx = glm::translate(xx, lightPos);
+		glUniformMatrix4fv(modelMatrixID, 1, GL_FALSE, &xx[0][0]);
+		cube.Draw(programID);
 
 
 	
-		MVP = Projection * View * modelMatrix;
-		// Send our transformation to the currently bound shader, in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-	
-
-		// Draw 2nd triangl
-		// Change model position
-		/*
-		Model = glm::translate(Model, glm::vec3(-2.0f, -1.0f, 0.0f));
-		//compute MVP matrix
-		MVP = Projection * View * Model;
-		// Send our transformation to the currently bound shader, in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
-
-		*/
+		
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();

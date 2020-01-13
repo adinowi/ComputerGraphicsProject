@@ -16,7 +16,8 @@ namespace renderer {
 
 		CarRenderer();
 		CarRenderer(model::Car tCar);
-		void Draw(GLuint shaderId, GLuint modelId);
+		CarRenderer(const char* path);
+		void Draw(GLuint shaderId, GLuint modelId, glm::mat4 Model);
 		
 	private:
 		renderer::Model mCarModel;

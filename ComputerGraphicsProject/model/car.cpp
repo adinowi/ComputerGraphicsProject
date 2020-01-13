@@ -32,3 +32,11 @@ Car::Car(glm::vec3 tPosition) {
 	mPosition = tPosition;
 	mRotation = 0.0f;
 };
+
+void Car::move(float x, float y, float z) {
+	mPosition = glm::vec3(x, y, z);
+}
+
+void Car::rotate(float angle) {
+	mRotation = angle;
+}

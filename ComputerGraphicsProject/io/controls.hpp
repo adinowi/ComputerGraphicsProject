@@ -7,5 +7,6 @@ namespace io {
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetProjectionMatrix();
 	glm::vec3 GetPosition();
+	glm::vec3 GetLightPosition();
 }
 #endif
